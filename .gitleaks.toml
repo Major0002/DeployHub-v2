@@ -1,0 +1,17 @@
+title = "Gitleaks Configuration for DeployHub v2"
+
+[allowlist]
+description = "Ignore development template secrets and test fixtures"
+paths = [
+  '''^\.env\.example$''',
+  '''^backend/\.env\.example$''',
+  '''^k8s/secret\.yaml$''',
+  '''^docker-compose\.ya?ml$''',
+  '''^backend/tests/.*$'''
+]
+regexes = [
+  '''deployhub-.*-secret-key-change-me''',
+  '''deployhub_secret.*''',
+  '''Admin123!''',
+  '''DevPassword123!'''
+]
