@@ -132,7 +132,6 @@ class ProjectService:
         failed_projects = failed_result.scalar()
 
         # Total deployments
-        from models.deployment import Deployment
         deploy_result = await self.db.execute(
             select(func.count()).select_from(Deployment)
             .join(Project)
@@ -159,10 +158,10 @@ class ProjectService:
         failed_deployments = failed_deploy_result.scalar()
 
         return ProjectStats(
-            total_projects=total_projects,
-            active_projects=active_projects,
-            failed_projects=failed_projects,
-            total_deployments=total_deployments,
-            successful_deployments=successful_deployments,
-            failed_deployments=failed_deployments
+            total_projects=total_projects or 0,
+            active_projects=active_projects or 0,
+            failed_projects=failed_projects or 0,
+            total_deployments=total_deployments or 0,
+            successful_deployments=successful_deployments or 0,
+            failed_deployments=failed_deployments or 0
         )

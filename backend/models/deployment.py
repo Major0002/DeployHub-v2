@@ -2,8 +2,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Integer, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Integer, JSON, Uuid
 from sqlalchemy.orm import relationship
 
 from database.base import Base
@@ -14,7 +13,7 @@ class Deployment(Base):
 
     __tablename__ = "deployments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
     # Status
     status = Column(String(50), default="pending")  # pending, building, running, success, failed, cancelled, rolled_back
@@ -44,14 +43,14 @@ class Deployment(Base):
     error_message = Column(Text, nullable=True)
     error_stack = Column(Text, nullable=True)
 
-    # Metadata
-    metadata = Column(JSON, default=dict)
+    # Metadata stored in column 'metadata'
+    deploy_metadata = Column("metadata", JSON, default=dict)
 
     # Foreign keys
-    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    project_id = Column(Uuid(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     project = relationship("Project", back_populates="deployments")
 
-    triggered_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    triggered_by = Column(Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True)
     triggerer = relationship("User", foreign_keys=[triggered_by])
 
     # Timestamps
@@ -61,3 +60,4 @@ class Deployment(Base):
 
     def __repr__(self):
         return f"<Deployment {self.id} - {self.status}>"
+

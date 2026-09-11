@@ -53,9 +53,12 @@ class ProjectResponse(ProjectBase):
     last_deployed_at: Optional[datetime] = None
 
 
+from schemas.deployment import DeploymentResponse
+
+
 class ProjectDetail(ProjectResponse):
     """Detailed project with deployments."""
-    deployments: List["DeploymentResponse"] = []
+    deployments: List[DeploymentResponse] = []
 
 
 class ProjectStats(BaseModel):
@@ -66,3 +69,8 @@ class ProjectStats(BaseModel):
     total_deployments: int
     successful_deployments: int
     failed_deployments: int
+
+
+# Resolve forward references
+ProjectDetail.model_rebuild()
+

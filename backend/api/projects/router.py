@@ -1,13 +1,14 @@
-"""Project management API routes."""
+from typing import List, Optional
 from uuid import UUID
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.base import get_db
 from schemas.project import ProjectCreate, ProjectUpdate, ProjectResponse, ProjectDetail, ProjectStats
+from schemas.deployment import DeploymentResponse, DeploymentTriggerRequest
 from services.project_service import ProjectService
+from services.deployment_service import DeploymentService
 from utils.dependencies import get_current_user
 from models.user import User
 
@@ -106,3 +107,29 @@ async def delete_project(
 
     await project_service.delete(project_id)
     return None
+
+
+@router.post("/{project_id}/deploy", response_model=DeploymentResponse, status_code=status.HTTP_201_CREATED)
+async def deploy_project(
+    project_id: UUID,
+    trigger_data: Optional[DeploymentTriggerRequest] = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Trigger a new deployment for a project."""
+    project_service = ProjectService(db)
+    project = await project_service.get_by_id(project_id)
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    if project.owner_id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    deploy_service = DeploymentService(db)
+    return await deploy_service.create(
+        project=project,
+        user_id=current_user.id,
+        trigger_data=trigger_data
+    )
+

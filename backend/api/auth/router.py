@@ -1,5 +1,5 @@
-"""Authentication API routes."""
 from datetime import timedelta
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
@@ -96,9 +96,17 @@ async def refresh_token(
         )
 
     user_id = payload.get("sub")
+    try:
+        user_uuid = UUID(user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token payload",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     user_service = UserService(db)
-    from uuid import UUID
-    user = await user_service.get_by_id(UUID(user_id))
+    user = await user_service.get_by_id(user_uuid)
 
     if not user or not user.is_active:
         raise HTTPException(
