@@ -9,13 +9,15 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from core.config import get_settings
-from api.auth.router import router as auth_router
-from api.users.router import router as users_router
-from api.projects.router import router as projects_router
-from api.deployments.router import router as deployments_router
-from api.health.router import router as health_router
-from utils.exceptions import DeployHubException, deployhub_exception_handler
+from .core.config import get_settings
+from .api.auth.router import router as auth_router
+from .api.users.router import router as users_router
+from .api.projects.router import router as projects_router
+from .api.deployments.router import router as deployments_router
+from .api.health.router import router as health_router
+from .utils.exceptions import DeployHubException, deployhub_exception_handler
+from .database.init_db import init_db
+
 
 logger = logging.getLogger("deployhub")
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +28,8 @@ settings = get_settings()
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan context manager for startup and shutdown events."""
     logger.info(f"🚀 Starting {settings.APP_NAME} v{settings.APP_VERSION} [{settings.ENVIRONMENT}]")
+    # Initialize DB and create tables / seed data
+    await init_db()
     yield
     logger.info(f"🛑 Shutting down {settings.APP_NAME}")
 
